@@ -2,6 +2,7 @@ import {
   getUserApi,
   loginUserApi,
   logoutApi,
+  refreshToken,
   registerUserApi,
   updateUserApi,
 } from '@api';
@@ -66,8 +67,14 @@ export const loginUser = createAsyncThunk(
 );
 
 export const checkUserAuth = createAsyncThunk('user/checkUserAuth', async () => {
-  if (!getCookie(ACCESS_TOKEN_KEY)) {
+  const hasAccessToken = !!getCookie(ACCESS_TOKEN_KEY);
+  const hasRefreshToken = !!localStorage.getItem(REFRESH_TOKEN_KEY);
+
+  if (!hasAccessToken && !hasRefreshToken) {
     return null;
+  }
+  if (!hasAccessToken) {
+    await refreshToken();
   }
   const data = await getUserApi();
   return data.user;
