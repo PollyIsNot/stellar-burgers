@@ -23,6 +23,7 @@ export const ResetPasswordUI = ({
       <form className={`pb-15 ${styles.form}`} name="login" onSubmit={handleSubmit}>
         <div className="pb-6">
           <PasswordInput
+            placeholder="Введите новый пароль"
             onChange={(e) => setPassword(e.target.value)}
             value={password}
             name="password"
