@@ -35,7 +35,7 @@ export const ProfileUI = ({
         <div className="pb-6">
           <Input
             type={'email'}
-            placeholder={'E-mail'}
+            placeholder={'Логин'}
             onChange={handleInputChange}
             value={formValue.email}
             name={'email'}
@@ -66,7 +66,7 @@ export const ProfileUI = ({
               size="medium"
               onClick={handleCancel}
             >
-              Отменить
+              Отмена
             </Button>
             <Button type="primary" size="medium" htmlType="submit">
               Сохранить
