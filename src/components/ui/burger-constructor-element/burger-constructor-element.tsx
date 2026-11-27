@@ -17,7 +17,7 @@ export const BurgerConstructorElementUI = memo(function BurgerConstructorElement
   handleClose,
 }: BurgerConstructorElementUIProps): React.JSX.Element {
   return (
-    <li className={`${styles.element} mb-4 mr-2`}>
+    <li className={`${styles.element} mb-4 mr-2`} data-testid="constructor-ingredient">
       <MoveButton
         handleMoveDown={handleMoveDown}
         handleMoveUp={handleMoveUp}

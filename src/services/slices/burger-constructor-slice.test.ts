@@ -1,3 +1,4 @@
+import { anotherBun, anotherMain, bun, main, sauce } from './__fixtures__/ingredients';
 import {
   addIngredient,
   burgerConstructorSlice,
@@ -6,86 +7,12 @@ import {
 } from './burger-constructor-slice';
 import { createOrder } from './order-slice';
 
-import type {
-  TConstructorIngredient,
-  TConstructorState,
-  TIngredient,
-  TOrder,
-} from '@utils-types';
+import type { TConstructorIngredient, TConstructorState, TOrder } from '@utils-types';
 
 const burgerConstructorReducer = burgerConstructorSlice.reducer;
+const initialState = burgerConstructorSlice.getInitialState();
 
 const REQUEST_ID = 'test-request-id';
-
-const bun: TIngredient = {
-  _id: '643d69a5c3f7b9001cfa093c',
-  name: 'Краторная булка N-200i',
-  type: 'bun',
-  proteins: 80,
-  fat: 24,
-  carbohydrates: 53,
-  calories: 420,
-  price: 1255,
-  image: 'https://norma.ffapi.ru/images/bun-02.png',
-  image_mobile: 'https://norma.ffapi.ru/images/bun-02-mobile.png',
-  image_large: 'https://norma.ffapi.ru/images/bun-02-large.png',
-};
-
-const anotherBun: TIngredient = {
-  _id: '643d69a5c3f7b9001cfa093d',
-  name: 'Флюоресцентная булка R2-D3',
-  type: 'bun',
-  proteins: 44,
-  fat: 26,
-  carbohydrates: 85,
-  calories: 643,
-  price: 988,
-  image: 'https://norma.ffapi.ru/images/bun-01.png',
-  image_mobile: 'https://norma.ffapi.ru/images/bun-01-mobile.png',
-  image_large: 'https://norma.ffapi.ru/images/bun-01-large.png',
-};
-
-const main: TIngredient = {
-  _id: '643d69a5c3f7b9001cfa0941',
-  name: 'Биокотлета из марсианской Магнолии',
-  type: 'main',
-  proteins: 420,
-  fat: 142,
-  carbohydrates: 242,
-  calories: 4242,
-  price: 424,
-  image: 'https://norma.ffapi.ru/images/meat-01.png',
-  image_mobile: 'https://norma.ffapi.ru/images/meat-01-mobile.png',
-  image_large: 'https://norma.ffapi.ru/images/meat-01-large.png',
-};
-
-const anotherMain: TIngredient = {
-  _id: '643d69a5c3f7b9001cfa093e',
-  name: 'Филе Люминесцентного тетраодонтимформа',
-  type: 'main',
-  proteins: 44,
-  fat: 26,
-  carbohydrates: 85,
-  calories: 643,
-  price: 988,
-  image: 'https://norma.ffapi.ru/images/meat-03.png',
-  image_mobile: 'https://norma.ffapi.ru/images/meat-03-mobile.png',
-  image_large: 'https://norma.ffapi.ru/images/meat-03-large.png',
-};
-
-const sauce: TIngredient = {
-  _id: '643d69a5c3f7b9001cfa0942',
-  name: 'Соус Spicy-X',
-  type: 'sauce',
-  proteins: 30,
-  fat: 20,
-  carbohydrates: 40,
-  calories: 30,
-  price: 90,
-  image: 'https://norma.ffapi.ru/images/sauce-02.png',
-  image_mobile: 'https://norma.ffapi.ru/images/sauce-02-mobile.png',
-  image_large: 'https://norma.ffapi.ru/images/sauce-02-large.png',
-};
 
 const bunItem: TConstructorIngredient = { ...bun, id: 'bun-item-id' };
 const mainItem: TConstructorIngredient = { ...main, id: 'main-item-id' };
@@ -116,16 +43,16 @@ describe('Редьюсер слайса burgerConstructor', () => {
   test('возвращает начальное состояние при неизвестном экшене', () => {
     const state = burgerConstructorReducer(undefined, { type: 'UNKNOWN' });
 
-    expect(state).toEqual({ bun: null, ingredients: [] });
+    expect(state).toEqual(initialState);
   });
 
   describe('экшен addIngredient', () => {
     test('добавляет булку и присваивает ей id', () => {
-      const state = burgerConstructorReducer(undefined, addIngredient(bun));
+      const state = burgerConstructorReducer(initialState, addIngredient(bun));
 
       expect(state.bun).toMatchObject(bun);
       expect(typeof state.bun?.id).toBe('string');
-      expect(state.ingredients).toEqual([]);
+      expect(state.ingredients).toEqual(initialState.ingredients);
     });
 
     test('заменяет ранее добавленную булку новой', () => {
@@ -148,9 +75,9 @@ describe('Редьюсер слайса burgerConstructor', () => {
     });
 
     test('добавляет соус в список начинок, а не вместо булки', () => {
-      const state = burgerConstructorReducer(undefined, addIngredient(sauce));
+      const state = burgerConstructorReducer(initialState, addIngredient(sauce));
 
-      expect(state.bun).toBeNull();
+      expect(state.bun).toBe(initialState.bun);
       expect(state.ingredients).toHaveLength(1);
       expect(state.ingredients[0]).toMatchObject(sauce);
       expect(typeof state.ingredients[0].id).toBe('string');
@@ -160,7 +87,7 @@ describe('Редьюсер слайса burgerConstructor', () => {
   test('экшен removeIngredient удаляет начинку по её id', () => {
     const state = burgerConstructorReducer(filledState, removeIngredient(sauceItem.id));
 
-    expect(state).toEqual({ bun: bunItem, ingredients: [mainItem, anotherMainItem] });
+    expect(state).toEqual({ ...filledState, ingredients: [mainItem, anotherMainItem] });
   });
 
   describe('экшен moveIngredient', () => {
@@ -199,7 +126,7 @@ describe('Редьюсер слайса burgerConstructor', () => {
         createOrder.fulfilled(order, REQUEST_ID, orderIngredientIds)
       );
 
-      expect(state).toEqual({ bun: null, ingredients: [] });
+      expect(state).toEqual(initialState);
     });
 
     test('rejected не очищает конструктор при ошибке заказа', () => {

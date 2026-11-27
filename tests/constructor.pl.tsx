@@ -10,6 +10,16 @@ const INGREDIENTS_URL = '**/api/ingredients';
 const USER_URL = '**/api/auth/user';
 const ORDERS_URL = '**/api/orders';
 
+const TEST_ID = {
+  burgerConstructor: 'burger-constructor',
+  bunTop: 'constructor-bun-top',
+  bunBottom: 'constructor-bun-bottom',
+  bunPlaceholder: 'constructor-bun-placeholder',
+  ingredient: 'constructor-ingredient',
+  ingredientsPlaceholder: 'constructor-ingredients-placeholder',
+  modalOverlay: 'modal-overlay',
+};
+
 const BUN_NAME = 'Краторная булка N-200i';
 const MAIN = {
   id: '643d69a5c3f7b9001cfa0941',
@@ -32,8 +42,11 @@ const getIngredientCard = (page: Page, name: string): Locator =>
     .filter({ hasText: name })
     .filter({ has: page.getByRole('button', { name: 'Добавить' }) });
 
-const getConstructorElement = (page: Page, name: string): Locator =>
-  page.locator('.constructor-element').filter({ hasText: name });
+const getIngredientCounter = (page: Page, name: string, count: string): Locator =>
+  getIngredientCard(page, name).getByText(count, { exact: true });
+
+const getBurgerConstructor = (page: Page): Locator =>
+  page.getByTestId(TEST_ID.burgerConstructor);
 
 const getModal = (page: Page): Locator => page.locator('#modals');
 
@@ -56,28 +69,44 @@ test.describe('Добавление ингредиентов в конструк
   });
 
   test('булка добавляется в верх и низ конструктора', async ({ page }) => {
+    const burgerConstructor = getBurgerConstructor(page);
+
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunPlaceholder)).toHaveCount(2);
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunTop)).toHaveCount(0);
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunBottom)).toHaveCount(0);
+
     await addIngredient(page, BUN_NAME);
 
-    await expect(getConstructorElement(page, `${BUN_NAME} (верх)`)).toBeVisible();
-    await expect(getConstructorElement(page, `${BUN_NAME} (низ)`)).toBeVisible();
-    await expect(getIngredientCard(page, BUN_NAME).locator('.counter__num')).toHaveText(
-      '2'
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunTop)).toContainText(
+      `${BUN_NAME} (верх)`
     );
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunBottom)).toContainText(
+      `${BUN_NAME} (низ)`
+    );
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunPlaceholder)).toHaveCount(0);
+    await expect(getIngredientCounter(page, BUN_NAME, '2')).toBeVisible();
   });
 
   test('начинка и соус добавляются в середину конструктора', async ({ page }) => {
+    const burgerConstructor = getBurgerConstructor(page);
+    const constructorIngredients = burgerConstructor.getByTestId(TEST_ID.ingredient);
+
+    await expect(
+      burgerConstructor.getByTestId(TEST_ID.ingredientsPlaceholder)
+    ).toHaveText('Выберите начинку');
+    await expect(constructorIngredients).toHaveCount(0);
+
     await addIngredient(page, MAIN.name);
     await addIngredient(page, SAUCE_NAME);
 
-    await expect(getConstructorElement(page, MAIN.name)).toBeVisible();
-    await expect(getConstructorElement(page, SAUCE_NAME)).toBeVisible();
-    await expect(page.getByText('Выберите начинку')).toHaveCount(0);
-    await expect(getIngredientCard(page, MAIN.name).locator('.counter__num')).toHaveText(
-      '1'
-    );
+    await expect(constructorIngredients).toHaveCount(2);
+    await expect(constructorIngredients.nth(0)).toContainText(MAIN.name);
+    await expect(constructorIngredients.nth(1)).toContainText(SAUCE_NAME);
     await expect(
-      getIngredientCard(page, SAUCE_NAME).locator('.counter__num')
-    ).toHaveText('1');
+      burgerConstructor.getByTestId(TEST_ID.ingredientsPlaceholder)
+    ).toHaveCount(0);
+    await expect(getIngredientCounter(page, MAIN.name, '1')).toBeVisible();
+    await expect(getIngredientCounter(page, SAUCE_NAME, '1')).toBeVisible();
   });
 });
 
@@ -121,7 +150,7 @@ test.describe('Модальное окно ингредиента', () => {
   test('закрывается по клику на оверлей', async ({ page }) => {
     const modal = getModal(page);
 
-    await modal.locator('[class*="modal-overlay__overlay"]').click({
+    await modal.getByTestId(TEST_ID.modalOverlay).click({
       position: { x: 10, y: 10 },
     });
 
@@ -154,18 +183,28 @@ test.describe('Оформление заказа', () => {
     page,
   }) => {
     const modal = getModal(page);
+    const burgerConstructor = getBurgerConstructor(page);
 
     await addIngredient(page, BUN_NAME);
     await addIngredient(page, MAIN.name);
     await addIngredient(page, SAUCE_NAME);
+
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunTop)).toBeVisible();
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunBottom)).toBeVisible();
+    await expect(burgerConstructor.getByTestId(TEST_ID.ingredient)).toHaveCount(2);
+
     await page.getByRole('button', { name: 'Оформить заказ' }).click();
 
     await expect(modal.getByRole('heading', { name: ORDER_NUMBER })).toBeVisible();
     await expect(modal.getByText('идентификатор заказа')).toBeVisible();
 
-    await expect(page.locator('.constructor-element')).toHaveCount(0);
-    await expect(page.getByText('Выберите булки')).toHaveCount(2);
-    await expect(page.getByText('Выберите начинку')).toBeVisible();
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunTop)).toHaveCount(0);
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunBottom)).toHaveCount(0);
+    await expect(burgerConstructor.getByTestId(TEST_ID.ingredient)).toHaveCount(0);
+    await expect(burgerConstructor.getByTestId(TEST_ID.bunPlaceholder)).toHaveCount(2);
+    await expect(
+      burgerConstructor.getByTestId(TEST_ID.ingredientsPlaceholder)
+    ).toBeVisible();
 
     await modal.getByRole('button', { name: 'Закрыть' }).click();
 
