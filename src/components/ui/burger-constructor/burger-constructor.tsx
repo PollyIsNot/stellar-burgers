@@ -19,9 +19,9 @@ export const BurgerConstructorUI = ({
   onOrderClick,
   closeOrderModal,
 }: BurgerConstructorUIProps): React.JSX.Element => (
-  <section className={styles.burger_constructor}>
+  <section className={styles.burger_constructor} data-testid="burger-constructor">
     {constructorItems.bun ? (
-      <div className={`${styles.element} mb-4 mr-4`}>
+      <div className={`${styles.element} mb-4 mr-4`} data-testid="constructor-bun-top">
         <ConstructorElement
           type="top"
           isLocked
@@ -33,6 +33,7 @@ export const BurgerConstructorUI = ({
     ) : (
       <div
         className={`${styles.noBuns} ${styles.noBunsTop} ml-8 mb-4 mr-5 text text_type_main-default`}
+        data-testid="constructor-bun-placeholder"
       >
         Выберите булки
       </div>
@@ -50,13 +51,19 @@ export const BurgerConstructorUI = ({
           )
         )
       ) : (
-        <li className={`${styles.noBuns} ml-8 mb-4 mr-5 text text_type_main-default`}>
+        <li
+          className={`${styles.noBuns} ml-8 mb-4 mr-5 text text_type_main-default`}
+          data-testid="constructor-ingredients-placeholder"
+        >
           Выберите начинку
         </li>
       )}
     </ul>
     {constructorItems.bun ? (
-      <div className={`${styles.element} mt-4 mr-4`}>
+      <div
+        className={`${styles.element} mt-4 mr-4`}
+        data-testid="constructor-bun-bottom"
+      >
         <ConstructorElement
           type="bottom"
           isLocked
@@ -68,6 +75,7 @@ export const BurgerConstructorUI = ({
     ) : (
       <div
         className={`${styles.noBuns} ${styles.noBunsBottom} ml-8 mb-4 mr-5 text text_type_main-default`}
+        data-testid="constructor-bun-placeholder"
       >
         Выберите булки
       </div>
